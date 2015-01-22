@@ -84,6 +84,7 @@ public class SampleRobot extends RobotBase {
 	public void startCompetition() {
 		robotMain();
 		if (!m_robotMainOverriden) {
+			System.out.println("Running SampleRobot startCompetition()");
 			// First and one-time initialization
 			LiveWindow.setEnabled(false);
 			robotInit();

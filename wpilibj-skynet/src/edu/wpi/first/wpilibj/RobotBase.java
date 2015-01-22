@@ -5,7 +5,8 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.jar.Manifest;
 
-import com.zhiquanyeo.skynet.SkynetNode;
+import com.zhiquanyeo.skynet.communications.SkynetMainNode;
+import com.zhiquanyeo.skynet.communications.SkynetNode;
 
 import edu.wpi.first.wpilibj.internal.SkynetTimer;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
@@ -125,7 +126,26 @@ public abstract class RobotBase {
 		boolean errorOnExit = false;
 		
 		//TODO: We need to start up the skynet MQTT connection
+		System.out.println("Arguments:");
+		for (int i = 0; i < args.length; i++) {
+			System.out.println("[" + i + "] " + args[i]);
+		}
 		
+		String mqttHost = "localhost";
+		int mqttPort = 1883;
+		
+		if (args.length == 2) {
+			mqttHost = args[0];
+			mqttPort = Integer.parseInt(args[1]);
+		}
+		
+		try {
+			SkynetMainNode.openSkynetConnection(mqttHost, mqttPort);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("Skynet Connection Established");
+		SkynetMainNode.publish("skynet/control/pwm/1", "0.25");
 		//Set some implementations so that the static methods work properly
 		Timer.SetImplementation(new SkynetTimer());
 		RobotState.SetImplementation(DriverStation.getInstance());
@@ -152,7 +172,9 @@ public abstract class RobotBase {
 		System.out.println("RobotName = " + robotName);
 		RobotBase robot = null;
 		try {
+			System.out.println("Attempting to obtain instance of RobotBase");
 			robot = (RobotBase) Class.forName(robotName).newInstance();
+			System.out.println("Obtained instance of RobotBase");
 		}
 		catch (InstantiationException|IllegalAccessException|ClassNotFoundException e) {
 			System.err.println("WARNING: Robots don't quit!");
@@ -160,6 +182,7 @@ public abstract class RobotBase {
 		}
 		
 		try {
+			System.out.println("Running Skynet startCompetition()");
 			robot.startCompetition();
 		}
 		catch (Throwable t) {
