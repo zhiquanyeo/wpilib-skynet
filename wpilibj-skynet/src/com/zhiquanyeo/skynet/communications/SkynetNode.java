@@ -44,7 +44,6 @@ public class SkynetNode implements Runnable, MqttCallback {
 	public synchronized void publish(String topic, String payload) {
 		MqttMessage message = new MqttMessage(payload.getBytes());
 		try {
-			System.out.println("Publishing...");
 			client.publish(topic, message);
 		}
 		catch (MqttException e) {

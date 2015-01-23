@@ -2,12 +2,15 @@ package edu.wpi.first.wpilibj;
 
 import java.nio.ByteBuffer;
 
+import com.zhiquanyeo.skynet.driverstation.DriverStationUI;
+import com.zhiquanyeo.skynet.driverstation.DriverStationUIListener;
+
 /**
  * Provide access to the network communication data to/from the Driver Station 
  * @author zhiquan
  *
  */
-public class DriverStation implements RobotState.Interface {
+public class DriverStation implements RobotState.Interface, DriverStationUIListener {
 
 	/**
 	 * Number of Joystick ports
@@ -28,6 +31,11 @@ public class DriverStation implements RobotState.Interface {
 	
 	private static final double JOYSTICK_UNPLUGGED_MESAGE_INTERVAL = 1.0;
 	private double m_nextMessageTime = 0.0;
+	
+	
+	private boolean m_dsEnabled = false;
+	private int m_dsMode = 0;
+	
 	
 	private static class DriverStationTask implements Runnable {
 		
@@ -60,6 +68,8 @@ public class DriverStation implements RobotState.Interface {
 	//private final ByteBuffer m_packetDataAvailableMutex;
 	//private final ByteBuffer m_packetDataAvailableSem;
 	
+	private DriverStationUI m_ui;
+	
 	/**
 	 * Gets an instance of the DriverStation
 	 * 
@@ -80,6 +90,15 @@ public class DriverStation implements RobotState.Interface {
 		for (int i = 0; i < kJoystickPorts; i++) {
 			m_joystickButtons[i] = new HALJoystickButtons();
 		}
+		DriverStation self = this;
+		//Start up our UI
+		new Thread(new Runnable() {
+			public void run() {
+				System.out.println("Starting up new UI");
+				m_ui = new DriverStationUI(self);
+				m_ui.setVisible(true);
+			}
+		}).start();
 		
 		//NOTE: We might want to use a semaphore hooked up to our listening thread
 		
@@ -347,7 +366,7 @@ public class DriverStation implements RobotState.Interface {
 	@Override
 	public boolean isEnabled() {
 		// TODO Get a HALControlWord from our communications module
-		return false;
+		return m_dsEnabled;
 	}
 
 	/**
@@ -370,7 +389,7 @@ public class DriverStation implements RobotState.Interface {
 	@Override
 	public boolean isAutonomous() {
 		// TODO Auto-generated method stub
-		return false;
+		return m_dsMode == 0;
 	}
 
 	/**
@@ -382,7 +401,7 @@ public class DriverStation implements RobotState.Interface {
 	@Override
 	public boolean isTest() {
 		// TODO Auto-generated method stub
-		return false;
+		return m_dsMode == 2;
 	}
 	
 	/**
@@ -500,5 +519,17 @@ public class DriverStation implements RobotState.Interface {
 	 */
 	public void InTest(boolean entering) {
 		m_userInTest = entering;
+	}
+
+	@Override
+	public synchronized void enabledStateChanged(boolean isEnabled) {
+		System.out.println("[DS-UI] Enabled: " + isEnabled);
+		m_dsEnabled = isEnabled;
+	}
+
+	@Override
+	public synchronized void modeChanged(int mode) {
+		System.out.println("[DS-UI] Mode: " + mode);
+		m_dsMode = mode;
 	}
 }
