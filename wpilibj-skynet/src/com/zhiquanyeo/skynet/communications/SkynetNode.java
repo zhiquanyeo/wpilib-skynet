@@ -86,6 +86,7 @@ public class SkynetNode implements Runnable, MqttCallback {
 		else {
 			SkynetSubscriberCallback cb = subscriptions.get(topic);
 			if (cb != null) {
+				System.out.println("[SkynetNode] Received Topic: " + topic + " and calling back with " + message.toString());
 				cb.callback(new String(message.getPayload()));
 			}
 		}

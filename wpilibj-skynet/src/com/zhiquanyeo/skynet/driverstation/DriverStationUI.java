@@ -6,28 +6,39 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
 import java.awt.GridLayout;
+
 import javax.swing.JRadioButton;
 import javax.swing.BoxLayout;
+
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.RowSpec;
+import com.zhiquanyeo.skynet.driverstation.ControllerState.StickState;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JToggleButton;
 import javax.swing.AbstractAction;
+
 import java.awt.event.ActionEvent;
+
 import javax.swing.Action;
+
 import java.awt.event.ActionListener;
 
-public class DriverStationUI extends JFrame {
+public class DriverStationUI extends JFrame implements IControllerStateListener {
 
 	private JPanel contentPane;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	
 	
 	private DriverStationUIListener m_listener;
-
+	
+	protected ControllerWatcher controllerWatcher;
+    protected ControllerState controllerState;
+    protected ControllerStateWatcher controllerStateWatcher;
 	
 	/**
 	 * Create the frame.
@@ -37,6 +48,15 @@ public class DriverStationUI extends JFrame {
 		
 		m_listener.modeChanged(0);
 		m_listener.enabledStateChanged(false);
+		
+		controllerState = new ControllerState();
+		controllerState.addListener(this);
+		
+		controllerWatcher = new ControllerWatcher(controllerState);
+		new Thread(controllerWatcher).start();
+		
+		controllerStateWatcher = new ControllerStateWatcher(controllerState);
+        new Thread(controllerStateWatcher).start();
 		
 		setTitle("Skynet Driver Station");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -92,6 +112,25 @@ public class DriverStationUI extends JFrame {
 		});
 		tglbtnEnable.setBounds(6, 78, 141, 29);
 		contentPane.add(tglbtnEnable);
+	}
+
+
+	@Override
+	public void onControllerStateChanged() {
+		// TODO Auto-generated method stub
+		//Get the new stick states
+		for (int i = 0; i < controllerState.getFoundControllers().size(); i++) {
+			StickState stickState = controllerState.getStickState(i);
+			m_listener.stickUpdated(i, stickState);
+			//System.out.println("stickState[" + i + "] " + stickState);
+		}
+	}
+
+
+	@Override
+	public void onFoundControllersChanged() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

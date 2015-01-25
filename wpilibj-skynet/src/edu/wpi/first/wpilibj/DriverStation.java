@@ -2,6 +2,8 @@ package edu.wpi.first.wpilibj;
 
 import java.nio.ByteBuffer;
 
+import com.zhiquanyeo.skynet.driverstation.ControllerState.StickState;
+import com.zhiquanyeo.skynet.driverstation.DriverStationData;
 import com.zhiquanyeo.skynet.driverstation.DriverStationUI;
 import com.zhiquanyeo.skynet.driverstation.DriverStationUIListener;
 
@@ -138,6 +140,7 @@ public class DriverStation implements RobotState.Interface, DriverStationUIListe
 			//I think this sends a signal BACK to the DS
 			if (m_userInDisabled) {
 				//Signal that we are in disabled mode
+				//TODO we should send something to skynet to disable the robot
 			}
 			if (m_userInAutonomous) {
 				//Signal that we are in autonomous
@@ -181,13 +184,24 @@ public class DriverStation implements RobotState.Interface, DriverStationUIListe
 		//Get the status of all the joysticks
 		for (byte stick = 0; stick < kJoystickPorts; stick++) {
 			//TODO Get the joystick axes and POV values from our comms thread
+			
+			m_joystickAxes[stick] = DriverStationData.getJoystickAxes(stick);
+			int buttonData = DriverStationData.getJoystickButtons(stick);
+			m_joystickButtons[stick].count = 12;
+			m_joystickButtons[stick].buttons = buttonData;
+			
+			
 			//m_joystickAxes[stick] = 
 			//m_joystickPOVs[stick] = 
-			ByteBuffer countBuffer = ByteBuffer.allocateDirect(1);
+			//ByteBuffer countBuffer = ByteBuffer.allocateDirect(1);
 			//m_joystickButtons[stick].buttons = 
-			m_joystickButtons[stick].count = countBuffer.get();
+			//m_joystickButtons[stick].count = countBuffer.get();
 		}
 		
+		try {
+			Thread.sleep(10);
+		}
+		catch (InterruptedException e) {}
 		m_newControlData = true;
 	}
 	
@@ -315,7 +329,7 @@ public class DriverStation implements RobotState.Interface, DriverStationUIListe
 	 * @param button The button index, beginning at 1
 	 * @return the state of the joystick button
 	 */
-	public synchronized boolean getStickButton(final int stick, byte button) {
+	public synchronized boolean getStickButton(final int stick, int button) {
 		if (stick < 0 || stick >= kJoystickPorts) {
 			throw new RuntimeException("Joystick index is out of range, should be 0-5");
 		}
@@ -531,5 +545,19 @@ public class DriverStation implements RobotState.Interface, DriverStationUIListe
 	public synchronized void modeChanged(int mode) {
 		System.out.println("[DS-UI] Mode: " + mode);
 		m_dsMode = mode;
+	}
+
+	@Override
+	public void stickUpdated(int index, StickState state) {
+		// TODO Auto-generated method stub
+		short[] stickAxes = {
+			state.x,
+			state.y,
+			state.z,
+			state.throttle
+		};
+		DriverStationData.putJoystickAxes(index, stickAxes);
+		DriverStationData.putJoystickButtons(index, state.buttons);
+		
 	}
 }
