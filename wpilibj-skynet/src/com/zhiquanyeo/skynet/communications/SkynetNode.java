@@ -109,7 +109,7 @@ public class SkynetNode implements Runnable, MqttCallback {
 				client.publish("skynet/clients/register", regMessage);
 				
 				//Subscribe to the sensor messages
-				client.subscribe("skynet/sensors/#", 1);
+				client.subscribe("skynet/robot/sensors/#", 1);
 				System.out.println("READY");
 			}
 			catch (MqttException e) {

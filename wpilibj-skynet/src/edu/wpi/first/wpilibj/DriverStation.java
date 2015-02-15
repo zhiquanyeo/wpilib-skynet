@@ -199,7 +199,7 @@ public class DriverStation implements RobotState.Interface, DriverStationUIListe
 		}
 		
 		try {
-			Thread.sleep(10);
+			Thread.sleep(2);
 		}
 		catch (InterruptedException e) {}
 		m_newControlData = true;

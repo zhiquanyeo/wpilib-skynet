@@ -16,7 +16,7 @@ public class AnalogInput extends SensorBase implements PIDSource,
 	
 	public AnalogInput(final int channel) {
 		m_channel = channel;
-		m_impl = new SkynetAnalogInput("skynet/sensors/analog/" + channel);
+		m_impl = new SkynetAnalogInput("skynet/robot/sensors/analog/" + channel);
 		
 		LiveWindow.addSensor("AnalogInput", channel, this);
 	}

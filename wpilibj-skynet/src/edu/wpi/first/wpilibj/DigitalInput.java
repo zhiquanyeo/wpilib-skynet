@@ -10,7 +10,7 @@ public class DigitalInput implements LiveWindowSendable {
 	private int m_channel;
 	
 	public DigitalInput(int channel) {
-		impl = new SkynetDigitalInput("skynet/sensors/digital/" + channel);
+		impl = new SkynetDigitalInput("skynet/robot/sensors/digital/" + channel);
 		m_channel = channel;
 	}
 	
